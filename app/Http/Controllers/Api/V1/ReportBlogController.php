@@ -49,6 +49,36 @@ class ReportBlogController extends ApiBaseController
 
 
         }
+        elseif ($request->input('popularBlog')) {
+            $model=$repository->popularBlog();
+            return $this->successResponse(
+                BlogResource::collection($model->load(['views','category'])),
+                );
+
+
+        } elseif ($request->input('getOldBlogsByDate')) {
+            $model=$repository->getOldBlogsByDate();
+            return $this->successResponse(
+                BlogResource::collection($model->load(['views','category'])),
+                );
+
+
+        } elseif ($request->input('getNewBlogsByDate')) {
+            $model=$repository->getNewBlogsByDate();
+            return $this->successResponse(
+                BlogResource::collection($model->load(['views','category'])),
+                );
+
+
+        }
+        elseif ($request->input('getBlogsByDate')) {
+            $model=$repository->getBlogsByDate();
+            return $this->successResponse(
+                BlogResource::collection($model->load(['views','category'])),
+            );
+
+
+        }
 
 
     }

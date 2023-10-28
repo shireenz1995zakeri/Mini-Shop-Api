@@ -56,23 +56,9 @@ class ReportProductController extends ApiBaseController
                 ProductResource::collection($model->load(['views', 'category'])),
                 'گران ترین ها');
 
-        }elseif ($request->input('add')){
+        } elseif ($request->input('add')) {
 
-//            $orders = Order::select(DB::raw('DATE(created_at) as date'),
-//                DB::raw('SUM(totalAmount) as total_amount'))
-//               ->groupBy(DB::raw('DATE(created_at)'))
-//               ->get();
 
-//            $groupingColumn = Carbon::parse('2023-10-21'); // Set the grouping column dynamically
-//
-//            $orders= Order::select(DB::raw($groupingColumn . ' as date'), DB::raw('SUM(totalAmount) as total_amount'))
-//                ->groupBy(DB::raw($groupingColumn))
-//                ->first();
-//            $groupingColumn = Carbon::parse('2023-10-20')->toDateString(); // Convert the Carbon date object to a string
-//
-//            $orders = Order::select(DB::raw("'" . $groupingColumn . "' as date"), DB::raw('SUM(totalAmount) as total_amount'))
-//                ->groupBy(DB::raw("'" . $groupingColumn . "'"))
-//                ->first();
             $groupingColumn = '2023-10-20'; // Set the grouping date dynamically
 
             $orders = Order::select(DB::raw("DATE(created_at) as date"),
@@ -81,12 +67,47 @@ class ReportProductController extends ApiBaseController
                 ->groupBy(DB::raw("DATE(created_at)"))
                 ->get();
             dd($orders->toArray());
-            return    OrderResource::make($orders);
+            return OrderResource::make($orders);
+        } elseif ($request->input('popularProducts')) {
+            $model = $repository->popularProducts();
+            return $this->successResponse(
+                ProductResource::collection($model->load(['views', 'category'])),
+                'محبوب ترین ها');
+        } elseif ($request->input('getOldProductsByDate')) {
+            $model = $repository->getOldProductsByDate();
+            return $this->successResponse(
+                ProductResource::collection($model->load(['views', 'category'])),
+            );
+
+        } elseif ($request->input('getNewProductsByDate')) {
+            $model = $repository->popularProducts();
+            return $this->successResponse(
+                ProductResource::collection($model->load(['views', 'category'])),
+            );
+        } elseif ($request->input('getProductsByDate')) {
+            $model = $repository->popularProducts();
+            return $this->successResponse(
+                ProductResource::collection($model->load(['views', 'category'])),
+            );
+        } elseif ($request->input('NumberOfAproductPurchasedByAUser')) {
+            $model = $repository->NumberOfAproductPurchasedByAUser();
+            return $this->successResponse(
+                ProductResource::collection($model->load(['views', 'category'])),
+            );
+        } elseif ($request->input('BestSellingProducts')) {
+            $model = $repository->BestSellingProducts();
+            return $this->successResponse(
+                ProductResource::collection($model->load(['views', 'category'])),
+            );
+        } elseif ($request->input('ProductBuyUser')) {
+            $model = $repository->ProductBuyUser();
+            return $this->successResponse(
+                ProductResource::collection($model->load(['views', 'category'])),
+            );
         }
 
 
     }
-
 
 
 }

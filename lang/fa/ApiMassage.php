@@ -67,5 +67,5 @@ return[
     'the product quantity is incorrect'=>'به این تعداد محصول مورد نظر وجوذ ندارد',
     'The transaction was completed successfully'=>'تراکنش با موفقیت انجام شد',
 
-
+    'git status : git add . : git commit -m "message" : git push -u origin main'
 ];

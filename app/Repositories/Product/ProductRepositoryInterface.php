@@ -20,5 +20,19 @@ interface ProductRepositoryInterface extends \App\Repositories\BaseReposirotyInt
 
     public function toggle($model);
 
+    public function popularProducts($model);
+
+    public function getOldProductsByDate(Carbon $data);
+
+    public function getNewProductsByDate(Carbon $data);
+
+    public function getProductsByDate($date);
+
+    public function NumberOfAproductPurchasedByAUser($user);
+
+    public function BestSellingProducts();
+
+    public function ProductBuyUser($user);
+
 
 }

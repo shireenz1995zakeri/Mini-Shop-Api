@@ -17,6 +17,11 @@ interface BlogRepositoryInterface extends \App\Repositories\BaseReposirotyInterf
     public function theMostVisitedBlogs();
 
     public function theMostCommentBlogs();
+    public function popularBlog($model);
+    public function getOldBlogsByDate(Carbon $date);
+    public function getNewBlogsByDate(Carbon $date);
+
+    public function getBlogsByDate($date);
 
 }
 
