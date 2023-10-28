@@ -17,7 +17,9 @@ class TranslationFactory extends Factory
     public function definition()
     {
         return [
-
+            'title'=>fake()->name(),
+            'body'=>fake()->name(),
+            'locale'=>fake()->randomElement(['fa' ,'en']),
         ];
     }
 }

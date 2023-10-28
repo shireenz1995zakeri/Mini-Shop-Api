@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-
+use App\Models\Product;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\User;
@@ -23,20 +23,45 @@ class ExampleTest extends TestCase
     public function test_that_true_is_true()
     {
 
-        $user = User::first();
-        $role = Role::updateOrCreate(['name' => 'writer', 'guard_name' => 'web']);
+        // $user = User::first();
+        // $role = Role::updateOrCreate(['name' => 'writer', 'guard_name' => 'web']);
 
-        $permission = Permission::updateOrCreate(['name' => 'edite article', 'guard_name' => 'web']);
-        $role->givePermissionTo($permission);//یک پرمیشن را به یک رول ربط می دهیم
+        // $permission = Permission::updateOrCreate(['name' => 'edite article', 'guard_name' => 'web']);
+        // $role->givePermissionTo($permission);//یک پرمیشن را به یک رول ربط می دهیم
         //$permissions=Permission::pluck('id');
 
-        $user->givePermissionTo('edite article');
-        $user->assignRole($role);
+        // $user->givePermissionTo('edite article');
+        // $user->assignRole($role);
         //$role->syncPermissions($permissions);
         //dd($role->load('permissions')->toArray());
-        dd($user->load('roles', 'permissions')->toArray());
+        //dd($user->load('roles', 'permissions')->toArray());
+        $user = User::find(1);
+        $query = Product::query()->whereHas('order_items', function ($query) use ($user) {
+            $query->whereHas('order', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
 
-
+        })->withCount(['order_items' => function ($query) use ($user) {
+            $query->whereHas('order', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        }])->
+        withCount([
+            'order_items As order_items_sum' => function ($query) use ($user) {
+                $query->select(DB::raw("SUM(qyt) as paidsum"), function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                });
+            }
+        ])->orderBy('order_items_sum', 'desc')
+            ->limit(4)->get();
+        //order_items_count
+//        $query=Product::query()->withCount([
+//            'order_items As order_items_sum'=>function($query)
+//            {
+//                $query->select(DB::raw("SUM(qyt*price) as paidsum"));
+//            }
+//        ])->orderBy('order_items_sum','desc')->limit(5)->get();
+        dd($query->toArray());
         $this->assertTrue(true);
     }
 
@@ -71,6 +96,8 @@ class ExampleTest extends TestCase
 
     }
 
+
+
     public function test_create_role_permission_relation()
     {
         $role = Role::find(3);
@@ -98,6 +125,106 @@ class ExampleTest extends TestCase
         $this->assertTrue(true);
 
     }
+
+
+
+
+    public function test_practice1()
+    {
+        //echo   intdiv(13, 2);
+        $N=13;
+        $i=2;
+        $b=$N;
+
+        $array=[];
+        for($i=1;$b<2**$i;$i++){
+
+            $R=$N-2*intdiv($N, 2);
+            $array[]=$R;
+            $N=$N/2;
+
+        }
+
+        foreach ($array as $value){
+            echo $value;
+        }
+    }
+    public function test_68(){
+        $n=12;
+        $s=0;
+
+        for($i=1;$i<=$n;$i++){
+
+            $s=$s+(1/$i);
+
+        }
+        dd($s);
+
+    }
+    public function test_69(){
+        $n=12;
+        $s=0;
+
+        for($i=2;$i<=$n;$i+=2){
+
+            $s=$s+(1/$i);
+
+        }
+        dd($s);
+
+    }
+    public function test_70(){
+        $n=12;
+        $s=0;
+        $array=[];
+        for ($i=1;$i<$n;$i++){
+            $array[]=($i/(3**$i));
+            $s=$s+($i/(3**$i));
+        }
+        foreach ($array as $value){
+            echo $value."\n";
+        }
+    }
+    public function test_71(){
+        $a=2;
+        $b=2;
+        $c=5;
+        if($c<=$a+$b && $a<=$c+$b && $b<=$a+$c){
+            echo 'می توان مثلث ساخت';
+    }else{
+            echo 'نمی توان مثلث ساخت';
+        }
+    }
+    public function test_72(){
+        $a=5;
+        $b=3;
+        $c=4;
+        $a *= $a;
+        $b *= $b;
+        $c *= $c;
+        if($c==$a+$b || $b==$c+$a || $a==$c+$b){
+            echo 'مثلث قایم الزاویه است';
+        }else{
+          echo  'مثلث قایم الزاویه نیست';
+        }
+
+
+    }
+    public function test_73(){
+       $a=12;
+       $b=12;
+       $c=9;
+       if($a>$b && $a>$c){
+           echo $a.' بزرگترین عدد است';
+       }elseif ($b>$a && $b>$c){
+           echo $b.' بزرگتر است';
+       }elseif ($c>$a && $c>$b){
+           echo $c.' بزرگتر است';
+       }else{
+          echo  'اعداد برابر با هم وجود دارند';
+       }
+    }
+
 
     public function test_create_exam()
     {
@@ -531,23 +658,6 @@ class ExampleTest extends TestCase
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public function exam3($result2)
     {
         $count = 0;
@@ -562,14 +672,16 @@ class ExampleTest extends TestCase
                 $e++;
             }
         }
-        return array($count,$e, $even, $odd);
+        return array($count, $e, $even, $odd);
 
-     }
+    }
+
     public function exam2($result)
     {
 
-         return array_reverse($result);
+        return array_reverse($result);
     }
+
     public function test_create_examm1()
     {
         for ($i = 1; $i <= 100; $i++) {
@@ -578,12 +690,12 @@ class ExampleTest extends TestCase
         $min = 20;
         $max = 65;
 
-        $result = $this->get_new($max,$min,$number);
+        $result = $this->get_new($max, $min, $number);
 
         ///  /////////////////////////سوال 2
         ///
-        $result2=$this->exam2($result);
-        foreach ($result2 as $r){
+        $result2 = $this->exam2($result);
+        foreach ($result2 as $r) {
             //echo $r;
         }
 
@@ -591,19 +703,19 @@ class ExampleTest extends TestCase
         //سوال سوم/////////سوال سوم////////سوال سوم///////
 
 
-          $result3=$this->exam3($result2);
+        $result3 = $this->exam3($result2);
 
-         //echo "count of odd:".$result3[0];
-       // echo "\n";
-          //echo "count of even".$result3[1];
+        //echo "count of odd:".$result3[0];
+        // echo "\n";
+        //echo "count of even".$result3[1];
         //سوال چهارم/////////////////////سوال چهارم////
-          echo(max($result3[2]));
+        echo(max($result3[2]));
 
-        echo "even"."\n";
+        echo "even" . "\n";
         echo(min($result3[2]));
         echo "\n";
         //  echo(max($result3[3]));
-        echo "odd:"."\n";
+        echo "odd:" . "\n";
         //  echo(min($result3[3]));
         echo "\n";
 

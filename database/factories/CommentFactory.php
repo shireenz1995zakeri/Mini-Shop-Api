@@ -22,7 +22,7 @@ class CommentFactory extends Factory
     {
         return [
             'comment' => fake()->text,
-            'user_id'=> User::factory(),
+            //'user_id'=> User::factory(),
             'parent_id'=> null,
             'published'=> rand(0,1),
 

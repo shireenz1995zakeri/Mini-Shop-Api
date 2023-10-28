@@ -16,4 +16,9 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
         parent::__construct($model);
     }
 
+    public function query(array $payload=[]):Builder
+    {
+        return parent::query($payload)->with(['translation']);
+    }
+
 }

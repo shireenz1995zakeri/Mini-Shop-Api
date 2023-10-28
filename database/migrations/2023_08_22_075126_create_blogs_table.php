@@ -18,9 +18,9 @@ return new class extends Migration
             $table->uuid();
             $table->foreignId('category_id')->nullable()->nullOnDelete();
             $table->foreignId('user_id')->nullable()->nullOnDelete();
-            $table->string('title');
-            $table->text('body');
-            $table->boolean('published');
+            //$table->string('title');
+            //$table->text('body');
+            $table->boolean('published')->default(0);
             $table->softDeletes();
             $table->timestamps();
         });

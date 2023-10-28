@@ -12,7 +12,7 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            'title'=>fake()->name(),
+            //'title'=>fake()->name(),
             'published'=>fake()->boolean(),
         ];
     }

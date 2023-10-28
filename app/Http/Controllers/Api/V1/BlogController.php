@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
+
 use App\Http\Requests\BlogRequest;
 use App\Http\Resources\BlogResource;
-use App\Http\Resources\BrandResource;
 use App\Models\Blog;
-use App\Models\Translation;
 use App\Repositories\Blog\BlogRepositoryInterface;
 use App\Services\Blog\DeleteBlogService;
+use App\Services\Blog\NewBlogsService;
+use App\Services\Blog\RemoveOldestBlogService;
 use App\Services\Blog\StoreBlogService;
 use App\Services\Blog\UpdateBlogService;
+use App\Services\Like\LikeService;
+use App\Services\View\ViewServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use App\Http\Controllers\Api\v1\ApiBaseController;
-
-
+use Illuminate\Http\JsonResponse;
 
 
 class BlogController extends ApiBaseController
@@ -26,120 +25,112 @@ class BlogController extends ApiBaseController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request,BlogRepositoryInterface $repository)
+
+    public function __construct()
     {
-//
-//
-//        $blog =Blog::find(15);
-//        $blog->published=0;
-//        $blog->title="2222";
-//        $blog->save();
-//        return [
-//            $blog->id,
-//            $blog->published,
-////            $blog->title,
-//        ];
-         //$blog->translation;
-        //$blogs=Blog::with('translations')->get();
+        $this->middleware('auth:sanctum');
+        $this->authorizeResource(Blog::class);
+    }
+    public function index(Request                 $request,
+                          BlogRepositoryInterface $repository)
+    {
 
-        //
-        //$blogs=Blog::with('category')->get();
-        //with('translations')-
-
-        if($request->input('limit')==-1){
-            $model=$repository->get($request->all());
-        }else{
-            $model = $repository->paginate($request->input('limit',5),$request->all());
+        if ($request->input('limit') == -1) {
+            $model = $repository->get($request->all());
+        } else {
+            $model = $repository->paginate($request->input('limit', 5), $request->all());
         }
 
 
-        return $this->successResponse(["blogs"=>BlogResource::collection($model),
-            "links"=>BlogResource::collection($model)->response()->getData()->links],
-            'بلاگ باموفقیت آپدیت شد');
+        return $this->successResponse([
+            "blogs" => BlogResource::collection($model),
+            "links" => BlogResource::collection($model)->response()->getData()->links],
+            __('ApiMassage.Blogs were successfully displayed'));
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(BlogRequest $request,StoreBlogService $service)
+    public function store(BlogRequest $request):JsonResponse
     {
-        $model=$service->handle($request->validated());
-        return $this->successResponse(BlogResource::make($model),'کاربر باموفقیت ایجاد شد');
+        $data = $request->validated();
+        $data['user_id'] = auth()->id();
 
-//       $blog= Blog::create([
-//            'published'=>1,
-//            'user_id'=>1,
-//            'category_id'=>4,
-//        ]);
-//       $blog->translations()->create([
-//           "key"=>"title",
-//
-//           'value'=> 'تست33',
-//           'locale'=>'fa'
-//       ]);
-//        $blog->translations()->create([
-//            "key"=>"title",
-//
-//            'value'=> 'test33',
-//            'locale'=>'en'
-//        ]);
-//
-////       $blog->translations()->create([
-////           'key'=>'title',
-////           'value'=>'blog1',
-////           'locale'=>'fa',
-////       ]);
-//
-////        $blog->translations()->create([
-////            'key'=>'title',
-////            'value'=>'blog1',
-////            'locale'=>'en',
-////        ]);
-//        return $blog->load('translations');
+        $model = StoreBlogService::run($data);
+        return $this->successResponse(BlogResource::make($model->load(['category','translation'])),
+            __('ApiMassage.Blog created  successfully'));
+
+
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Blog  $blog
+     * @param \App\Models\Blog $blog
      * @return \Illuminate\Http\Response
      */
-    public function show(Blog $blog,BLogRepositoryInterface $repository)
+    public function show(BlogRepositoryInterface $repository,Blog $blog, ViewServices $service)
     {
+        $service->addview($blog);
+        $data=$repository->find($blog->id);
 
-        $model=$repository->find($blog->id);
-        return $this->successResponse(BlogResource::make($blog),'بلاگ باموفقیت نمایش داده شد');
+        return $this->successResponse(BlogResource::make(
+            $data->load(['category', 'user', 'medias', 'comments', 'views', 'likes','translation'])),
+            __('ApiMassage.The blog was shown'));
 
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Blog  $blog
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Blog $blog
      * @return \Illuminate\Http\Response
      */
-    public function update(BlogRequest $request,UpdateBlogService $service, Blog $blog)
+    public function update(BlogRequest $request, UpdateBlogService $service, Blog $blog)
     {
-        $model=$service->handle($blog,$request->validated());
+        $data = $request->validated();
+        $data['user_id'] = auth()->id();
+        $model = UpdateBlogService::run($blog, $data);
 
-        return $this->successResponse(BlogResource::make($model),'بلاگ باموفقیت آپدیت شد');
+        return $this->successResponse(BlogResource::make($model->load(['category','translation'])),
+            __('ApiMassage.The blog has been updated successfully'));
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Blog  $blog
+     * @param \App\Models\Blog $blog
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Blog $blog,DeleteBlogService $service)
+    public function destroy(Blog $blog, DeleteBlogService $service)
     {
 //
-        $service->handle($blog);
+        DeleteBlogService::run($blog);
 
-        return $this->successResponse(BlogResource::make($blog),'بلاگ حدف شد');
+        return $this->successResponse(BlogResource::make($blog),     __('ApiMassage.Blog deleted'));
     }
+
+
+    public function toggle(Blog $blog, BlogRepositoryInterface $repository)
+    {
+         $repository->toggle($blog);
+        return $this->successResponse(
+            BlogResource::make($blog),
+            __('ApiMassage.Message status updated successfully')
+        );
+
+
+    }
+
+    //    لایک کردن مقالات
+    public function addLikeBlog(Blog $blog, LikeService $service)
+    {
+        $service->addLike($blog);
+    }
+
+
 }

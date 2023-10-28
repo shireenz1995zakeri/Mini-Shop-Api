@@ -24,11 +24,20 @@ class BlogRequest extends FormRequest
      */
     public function rules()
     {
+
         return [
+
+                'translation' =>'array',
+                'translation.fa.title'=>'string|required',
+            'translation.en.title'=>'string|required',
+                'translation.fa.body'=>'string|required',
+               'translation.en.body'=>'string|required',
+
+
             'category_id' => ["int", 'nullable'],
             'user_id'     => ['int', 'nullable'],
-            'title'       => ['required', 'string'],
-            'body'        => ['required', 'string'],
+            //'title'       => ['required', 'string'],
+           // 'body'        => ['required', 'string'],
             'published'   => ['boolean'],
 
         ];

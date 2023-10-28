@@ -6,12 +6,14 @@ use App\Models\Brand;
 use App\Repositories\Brand\BrandRepositoryInterface;
 use App\Services\MediaUploder\MediaUploader;
 
+use App\Services\Translation\TranslationService;
 use Illuminate\Support\Facades\DB;
+use Lorisleiva\Actions\Concerns\AsAction;
 
 
 class UpdateBrandService
 {
-
+    use AsAction;
     public function __construct(public  BrandRepositoryInterface $repository,
     private MediaUploader $mediaUploader)
     {
@@ -22,7 +24,7 @@ class UpdateBrandService
     {
         return DB::transaction(function () use ($eloquent,$payload){
             $model=$this->repository->update($eloquent,$payload);
-
+            TranslationService::translate($model,$payload['translation']);
             if(request()->hasFile('image')){
                 $res=$this->mediaUploader->upload('images/brand');
 

@@ -18,8 +18,8 @@ class OrderFactory extends Factory
     public function definition()
     {
         return [
-            'user_id'=>User::factory(),
-             'total'=>rand(100,1000000),
+            //'user_id'=>User::factory(),
+             'totalAmount'=>rand(100,1000000),
             'status'=>rand(1,120),
         ];
     }

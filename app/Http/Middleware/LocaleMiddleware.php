@@ -16,7 +16,8 @@ class LocaleMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        app()->setLocale($request->header('lang','fa'));
+
+        app()->setLocale($request->header('locale','fa'));
         return $next($request);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\Translation\TranslationService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CategoryResource extends JsonResource
@@ -17,13 +18,16 @@ class CategoryResource extends JsonResource
 
             return [
                 "id"=>$this->id,
-                "title"=>$this->title,
+                'title'=>$this->whenLoaded('translation',function (){
+                    return TranslationService::get($this->resource,'title');
+                }),
+               // "title"=>$this->title,
                 'created_at'=>$this->created_at,
                 'updated_at'=>$this->updated_at,
-                //در صورتی که route:parentفراخوانی شده بود
-                //آنگاه parent ها را به ما نشان بده
-               // 'parent_id'=>new CategoryResource($this->whenLoaded('parent')),
-               // 'parent_id'=>new CategoryResource($this->whenLoaded('children')),
+                'children' => $this->whenLoaded('children',fn()=>CategoryResource
+                    ::collection($this->children)),
+                'parent' => $this->whenLoaded('parent',fn()=>CategoryResource
+                    ::make($this->parent)),
                 'products'=>new ProductResource($this->whenLoaded('products')),
 
             ];

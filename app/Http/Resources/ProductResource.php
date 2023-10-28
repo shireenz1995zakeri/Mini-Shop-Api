@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\Translation\TranslationService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\BrandResource;
@@ -16,13 +17,22 @@ class ProductResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'category_id'=>CategoryResource::make($this->category),
-            'brand_id'=>BrandResource::make($this->brand),
+           'id'=>$this->id,
             'inventory'=>$this->inventory,
             'published'=>$this->published,
-            'title'=>$this->title,
-            'body'=>$this->body,
+            'title'=>$this->whenLoaded('translation',function (){
+                return TranslationService::get($this->resource,'title');
+            }),
+            'body'=>$this->whenLoaded('translation',function (){
+                return TranslationService::get($this->resource,'body');
+            }),
+            //'title'=>$this->title,
+            //'body'=>$this->body,
             'price'=>$this->price,
+            'category_id'=>CategoryResource::make($this->category),
+            'brand_id'=>$this->whenLoaded('brand',function (){
+                return BrandResource::make($this->resource->brand->load('translation'));
+            })
         ];
     }
 }

@@ -14,6 +14,14 @@ class CommentResource extends JsonResource
      */
     public function toArray($request)
     {
-        return parent::toArray($request);
+        return [
+            'id'   => $this->id,
+            'type' => $this->whenLoaded('type', fn() =>$this->commentable_type),
+            //'comment_id' => $this->commentable_id,
+            'data' => $this->whenLoaded('commentable', fn() =>$this->commentable),
+            'comment'=>$this->comment,
+            'replies'=>$this->replies,
+            'parent'=>$this->whenLoaded('parent', fn() => $this->parent),
+        ];
     }
 }

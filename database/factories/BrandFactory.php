@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Brand;
+use App\Services\Translation\TranslationService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -14,10 +16,24 @@ class BrandFactory extends Factory
      *
      * @return array<string, mixed>
      */
+
+
     public function definition()
     {
         return [
-            'title'=>fake()->name(),
-        ];
+
+            ];
     }
+
+//    public function configure()
+//    {
+//
+//        $this->afterCreating(function (Brand $brand) {
+//           TranslationService::translate($brand, [
+//               'fa' => [
+//                   'title' => fake()->title,
+//               ]
+//           ]);
+//        });
+//    }
 }

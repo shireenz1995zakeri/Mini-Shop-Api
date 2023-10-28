@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Api\V1;
 
 
 use App\Http\Requests\ProductRequest;
+use App\Http\Resources\BlogResource;
 use App\Http\Resources\ProductResource;
+use App\Models\Blog;
 use App\Models\Product;
 use App\Repositories\Product\ProductRepositoryInterface;
+use App\Services\Like\LikeService;
 use App\Services\Product\DeleteProductService;
 use App\Services\Product\StoreProductService;
 use App\Services\Product\UpdateProductService;
+use App\Services\View\ViewServices;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\v1\ApiBaseController;
 
@@ -21,6 +25,11 @@ class ProductController extends ApiBaseController
      *
      * @return \Illuminate\Http\Response
      */
+//    public function __construct()
+//    {
+//        $this->middleware('auth:sanctum');
+//        $this->authorizeResource(Blog::class);
+//    }
     public function index(Request $request,ProductRepositoryInterface $repository)
     {
         if($request->input('limit'==-1)){
@@ -30,7 +39,8 @@ class ProductController extends ApiBaseController
 
         }
         return $this->successResponse(["products"=>ProductResource::collection($model),
-            "links"=>ProductResource::collection($model)->response()->getData()->links],"محصولات نمایش داده شد");
+            "links"=>ProductResource::collection($model)->response()->getData()->links],
+            __('ApiMassage.Products were successfully displayed'));
     }
 
     /**
@@ -39,11 +49,12 @@ class ProductController extends ApiBaseController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(ProductRequest $request,StoreProductService $service)
+    public function store(ProductRequest $request)
     {
 
-       $model=$service->handle($request->validated());
-        return $this->successResponse(ProductResource::make($model),'کاربر باموفقیت ایجاد شد');
+       $model=StoreProductService::run($request->validated());
+        return $this->successResponse(ProductResource::make($model->load('translation','medias')),
+            __('ApiMassage.Product created  successfully'));
 
 
     }
@@ -54,10 +65,13 @@ class ProductController extends ApiBaseController
      * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function show(Product $product,ProductRepositoryInterface $repository)
+    public function show(Product $product,ProductRepositoryInterface $repository, ViewServices $service)
     {
+        $service->addview($product);
         $model=$repository->find($product->id);
-        return $this->successResponse(ProductResource::make($model),'محصول مورد نظر یافت شد ');
+        return $this->successResponse(ProductResource::make(
+            $model->load(['comments','likes','views','category','medias','brand','translation'])),
+            __('ApiMassage.The product was shown'));
     }
 
     /**
@@ -69,8 +83,9 @@ class ProductController extends ApiBaseController
      */
     public function update(ProductRequest $request, Product $product,UpdateProductService $service)
     {
-        $model=$service->handle($product,$request->validated());
-        return $this->successResponse(ProductResource::make($model),'محصول مورد نظر آپدیت شد');
+        $model=UpdateProductService::run($product,$request->validated());
+        return $this->successResponse(ProductResource::make($model->load(['translation','medias'])),
+            __('ApiMassage.The product has been updated successfully'));
     }
 
     /**
@@ -81,8 +96,28 @@ class ProductController extends ApiBaseController
      */
     public function destroy(Product $product,DeleteProductService $service)
     {
-        $service->handle($product);
-        return $this->successResponse(ProductResource::make($product),'محصول مورد نظر حدف  شد');
+        DeleteProductService::run($product);
+        return $this->successResponse(ProductResource::make($product),    __('ApiMassage.Product deleted'));
 
     }
+
+    public function toggle(Product $product,ProductRepositoryInterface $repository)
+    {
+
+        $model = $repository->toggle($product);
+        return $this->successResponse(
+            ProductResource::make($product->load(['category'])),
+            //"Message status updated successfully"
+            __('ApiMassage.Message status updated successfully')
+        );
+
+
+    }
+
+    public function addLikeProduct(Product $product, LikeService $service)
+    {
+        $service->addLike($product);
+    }
+
+
 }

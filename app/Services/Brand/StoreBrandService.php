@@ -5,12 +5,15 @@ namespace App\Services\Brand;
 use App\Models\Brand;
 use App\Repositories\Brand\BrandRepositoryInterface;
 use App\Services\MediaUploder\MediaUploader;
+use App\Services\Translation\TranslationService;
 use App\Traits\HasMedia;
 use Illuminate\Support\Facades\DB;
+use Lorisleiva\Actions\Concerns\AsAction;
 
 
 class StoreBrandService
 {
+    use AsAction;
     use HasMedia;
     public function __construct(public BrandRepositoryInterface $repository,
     private MediaUploader $mediaUploader)
@@ -20,8 +23,10 @@ class StoreBrandService
 
     public function handle($payload ):Brand
     {
-        return DB::transaction(function ()use($payload){
+        return DB::transaction(function ()use($payload)
+        {
             $model=$this->repository->store($payload);
+            TranslationService::translate($model,$payload['translation']);
 
             if(request()->hasFile('image')){
                 $res=$this->mediaUploader->upload('images/brand');

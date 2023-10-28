@@ -16,7 +16,8 @@ return new class extends Migration
         Schema::create('views', function (Blueprint $table) {
             $table->id();
             $table->morphs('viewable');
-            $table->integer('view_count');
+            //$table->integer('view_count');
+            $table->string('ip');
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });

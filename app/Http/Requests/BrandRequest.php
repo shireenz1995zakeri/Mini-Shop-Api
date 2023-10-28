@@ -24,7 +24,9 @@ class BrandRequest extends FormRequest
     public function rules()
     {
         return [
-            'title'=>['required','string']
+            'translation' =>'array',
+            'translation.fa.title'=>'string|required',
+            'translation.en.title'=>'string|required',
         ];
     }
 }

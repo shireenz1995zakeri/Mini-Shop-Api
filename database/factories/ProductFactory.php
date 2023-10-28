@@ -20,13 +20,15 @@ class ProductFactory extends Factory
     public function definition()
     {
         return [
-            'user_id'     => User::factory(),
-            'title'=>fake()->name(),
-            'body'=>fake()->name(),
+            //'user_id'     => User::factory(),
+           // 'title'=>fake()->name(),
+         //   'body'=>fake()->name(),
             'category_id'=>Category::factory(),
             'brand_id'=>Brand::factory(),
             'published'=>fake()->boolean(),
-            'inventory'=>fake()->numberBetween(),
+            //'inventory'=>fake()->numberBetween(),
+            'inventory'=>rand(1,100),
+
             'price'=>rand(1000,10000),
         ];
     }

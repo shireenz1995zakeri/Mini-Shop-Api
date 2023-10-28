@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\BrandRequest;
 use App\Http\Resources\BrandResource;
-use App\Http\Resources\ProductResource;
+
 use App\Models\Brand;
 use App\Services\Brand\DeleteBrandService;
 use App\Services\Brand\StoreBrandService;
 use App\Services\Brand\UpdateBrandService;
 use Illuminate\Http\Request;
 use App\Repositories\Brand\BrandRepositoryInterface;
-use App\Http\Controllers\Api\v1\ApiBaseController;
+
 
 
 class BrandController extends ApiBaseController
@@ -21,6 +21,11 @@ class BrandController extends ApiBaseController
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+        $this->authorizeResource(Brand::class);
+    }
     public function index(Request $request,BrandRepositoryInterface $repository)
     {
 
@@ -30,7 +35,8 @@ class BrandController extends ApiBaseController
             $model = $repository->paginate($request->input('limit',5),$request->all());
         }
         return $this->successResponse(["brands"=>BrandResource::collection($model),
-            "links"=>BrandResource::collection($model)->response()->getData()->links],'برند ها با موفقیت نمایش داده شد');
+            "links"=>BrandResource::collection($model)->response()->getData()->links],
+            __('ApiMassage.Brands were successfully displayed'));
     }
 
     /**
@@ -39,10 +45,11 @@ class BrandController extends ApiBaseController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(BrandRequest $request,StoreBrandService $service)
+    public function store(BrandRequest $request)
     {
-        $model=$service->handle($request->validated());
-        return $this->successResponse(BrandResource::make($model),'برند باموفقیت ایجاد شد');
+        $model=StoreBrandService::run($request->validated());
+        return $this->successResponse(BrandResource::make($model->load('translation')),
+            __('ApiMassage.Brand created  successfully'));
     }
 
     /**
@@ -55,7 +62,8 @@ class BrandController extends ApiBaseController
     {
        // dd($brand->id);
         $model=$repository->find($brand->id);
-        return $this->successResponse(BrandResource::make($model),'برند باموفقیت نمایش داده شد');
+        return $this->successResponse(BrandResource::make($model->load('translation')),
+            __('ApiMassage.The brand was shown'));
 
     }
 
@@ -66,10 +74,11 @@ class BrandController extends ApiBaseController
      * @param  \App\Models\Brand  $brand
      * @return \Illuminate\Http\Response
      */
-    public function update(BrandRequest $request, Brand $brand,UpdateBrandService $service)
+    public function update(BrandRequest $request, Brand $brand)
     {
-        $model=$service->handle($brand,$request->validated());
-        return $this->successResponse(BrandResource::make($model),'برند باموفقیت آپدیت شد');
+        $model=UpdateBrandService::run($brand,$request->validated());
+        return $this->successResponse(BrandResource::make($model->load('translation')),
+            __('ApiMassage.The brand has been updated successfully'));
 
     }
 
@@ -79,16 +88,19 @@ class BrandController extends ApiBaseController
      * @param  \App\Models\Brand  $brand
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Brand $brand,DeleteBlogService $service)
+    public function destroy(Brand $brand)
     {
-        $service->handle($brand);
-        return $this->successResponse(BrandResource::make($brand),'برند  حدف شد');
+        DeleteBrandService::run($brand);
+        return $this->successResponse(BrandResource::make($brand),    __('ApiMassage.Brand deleted'));
     }
 
     public function getProducts(Brand $brand)
     {
-        //return $this->successResponse(new BrandResource($brand->load('products')),'getProducts');
-        return $this->successResponse(ProductResource::collection($brand->products),'getProducts');
+//        $data=$brand->brand('products');
+        //return $this->successResponse(BrandResource::collection($data),'getProducts');
+        return $this->successResponse(BrandResource::make($brand->
+        load('products')),//'getProducts'
+            __('ApiMassage.get Products'));
 
 
     }

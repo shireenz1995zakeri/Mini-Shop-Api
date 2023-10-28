@@ -2,9 +2,9 @@
 
 namespace App\Repositories;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-////////////////////////////////////////\\\\\\\\\\\\\\
 class BaseRepository implements BaseReposirotyInterface
 {
 
@@ -17,9 +17,9 @@ class BaseRepository implements BaseReposirotyInterface
           return $this->model->query($payload);
 
     }
-    public function paginate(int $limit = 15, array $payload = [])
+    public function paginate(int $limit = 15, array $payload = []): LengthAwarePaginator
     {
-          return $this->model->query($payload)->paginate($limit) ;
+          return $this->query($payload)->paginate($limit) ;
     }
 
     public function get(array $payload = [])

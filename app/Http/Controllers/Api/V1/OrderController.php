@@ -3,14 +3,30 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\OrderRequest;
 use App\Http\Resources\OrderItemResource;
 use App\Http\Resources\OrderResource;
+use App\Models\Comment;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\Transaction;
 use App\Repositories\Order\OrderRepositoryInterface;
+use App\Services\Order\StoreOrderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class OrderController extends ApiBaseController
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+        $this->authorizeResource(Order::class);
+    }
+
+
     /**
      * Display a listing of the resource.
      *
@@ -19,13 +35,14 @@ class OrderController extends ApiBaseController
     public function index(Request $request,OrderRepositoryInterface $repository)
     {
         if($request->input('limit')==-1){
-            $model=$repository->get($request->all());
+            $model=$repository->query($request->all());
         }else{
             $model=$repository->paginate($request->input('limit',5).$request->all());
         }
 
         return $this->successResponse(['orders'=>OrderItemResource::collection($model),
-    'links'=>OrderItemResource::collection($model)->response()->getData()->links],"لیست سفارشات با موفقیت نمایش داده شد");
+    'links'=>OrderItemResource::collection($model)->response()->getData()->links],
+            __('ApiMassage.Orders were successfully displayed'));
     }
 
     /**
@@ -34,11 +51,74 @@ class OrderController extends ApiBaseController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request,StoreOrderService $service)
+    public static function create(OrderRequest $request ,$amounts,$token)
     {
-        $model=$service->handle($request->validated());
-        return $this->successResponse(OrderResource::make($model),'سفارش باموفقیت ایجاد شد');
+
+
+        $order=Order::create([
+            'user_id'=>$request->user_id,
+            'totalAmount'=>$amounts['totalAmount'],
+            'status'=>1,
+
+        ]);
+        foreach ($request['order_items'] as $order_item)
+        {
+           $product= Product::findOrFail($order_item['product_id']);
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id'=>$product->id,
+                'price'=>$product->price,
+                'qyt'=>$order_item['qyt'],
+            ]);
+        }
+        Transaction::create([
+            'user_id'=>$request->user_id,
+            'order_id' => $order->id,
+            'amount'=>$amounts['totalAmount'],
+            'token'=>$token,
+            'request_from'=>$request->request_from,
+        ]);
+
     }
+    public static function update($token,$transId)
+    {
+
+            DB::beginTransaction();
+
+            $transaction=Transaction::where('token',$token)->firstOrFail();
+
+            $transaction->update([
+                'status'=>1,
+                'trans_id'=>$transId
+            ]);
+
+            $order=Order::findOrFail($transaction->order_id);
+//            dd($order);
+            $order->update([
+                'payment_status'=>1,
+                'status'=>2,
+
+            ]);
+
+            $OrderItem=OrderItem::where('order_id',$order->id)->get();
+            foreach ($OrderItem as $item){
+                $product=Product::find($item->product->id);
+                $product->update([
+                        'inventory'=>($product->inventory - $item->qyt),
+                ]);
+            }
+           DB::commit();
+
+    }
+//    public function  store(Request $request,$amounts)
+//    {
+//
+//      $model=  $this->service->handle([
+//            'user_id'=>$request['user_id'],
+//            'total_amount'=>$amounts['totalAmount'],
+//        ]);
+//        return $this->successResponse(OrderResource::make($model),'سفارش باموفقیت ایجاد شد');
+//    }
 
     /**
      * Display the specified resource.
@@ -49,21 +129,11 @@ class OrderController extends ApiBaseController
     public function show(Order $order,OrderRepositoryInterface $repository)
     {
         $model=$repository->find($order->id);
-        return $this->successResponse(BlogResource::make($order),'بلاگ باموفقیت نمایش داده شد');
+        return $this->successResponse(OrderResource::make($order),
+            __('ApiMassage.The order has been updated successfully'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Order  $order
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Order $order,StoreOrderService $service)
-    {
-        $model=$service->handle($request->validated());
-        return $this->successResponse(OrderResource::make($model),'سفارش آپدیت شد');
-    }
+
 
     /**
      * Remove the specified resource from storage.
@@ -71,10 +141,10 @@ class OrderController extends ApiBaseController
      * @param  \App\Models\Order  $order
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Order $order,DeleteOrderService $service)
+    public function destroy(Order $order)
     {
-        $service->handle($order);
-        return $this->successResponse(OrderResource::make($order),"حدف شد");
+        DeleteOrderService::run($order);
+        return $this->successResponse(OrderResource::make($order),    __('ApiMassage.Order deleted'));
 
     }
 }

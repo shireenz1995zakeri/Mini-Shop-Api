@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 
+use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,3 +17,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+//درگاه پرداخت pay
+Route::get('/payment/verify',function (Request $request){
+  $response=Http::post('http://localhost:8000/api/payment/verify',[
+      'token'=>$request->token,
+  ]);
+  dd($response);
+});
+
+

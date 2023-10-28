@@ -18,8 +18,8 @@ return new class extends Migration {
             $table->foreignId('user_id')->nullable()->comment('is writer')->constrained()->cascadeOnUpdate()->nullOnDelete();
             $table->foreignId('category_id')->nullable()->constrained()->cacadeOndelete();
             $table->foreignId('brand_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('title');
-            $table->text('body');
+           // $table->string('title');
+           // $table->text('body');
             $table->unsignedBigInteger('inventory')->default(0)->comment('موجودی');
             $table->boolean('published')->default(0);
             $table->decimal('price');

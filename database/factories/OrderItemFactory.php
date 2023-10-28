@@ -20,8 +20,10 @@ class OrderItemFactory extends Factory
         return [
 //            'order_id'=>Order::factory(),
             'product_id'=>Product::factory(),
-            'qyt'=>rand(100,1000),
+
+            'qyt'=>rand(1,10),
             'price'=>rand(100,100000),
+
         ];
     }
 }

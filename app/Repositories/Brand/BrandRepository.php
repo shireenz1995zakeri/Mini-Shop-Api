@@ -15,4 +15,8 @@ class BrandRepository extends BaseRepository implements BrandRepositoryInterface
     {
         parent::__construct($model);
     }
+    public function query(array $payload=[]):Builder
+    {
+        return parent::query($payload)->with(['translation']);
+    }
 }

@@ -12,32 +12,35 @@ class View extends Model
         'viewable_id',
         'user_id',
         'viewable_type',
+         'ip',
     ];
+
     public function viewable(){
+
         return $this->morphTo();
     }
 
 
 
-    public function handle(Post $post)
+    public function handle(Blog $blog)
     {
-        if (!$this->isPostViewed($post))
+        if (!$this->isBlogViewed($blog))
         {
-            $post->increment('view_count');
-            $this->storePost($post);
+            $blog->increment('view_count');
+            $this->storeBlog($blog);
         }
     }
 
-    private function isPostViewed($post)
+    private function isblogViewed($blog)
     {
-        $viewed = $this->session->get('viewed_posts', []);
+        $viewed = $this->session->get('viewed_blogs', []);
 
-        return array_key_exists($post->id, $viewed);
+        return array_key_exists($blog->id, $viewed);
     }
 
-    private function storePost($post)
+    private function storeBlog($blog)
     {
-        $key = 'viewed_posts.' . $post->id;
+        $key = 'viewed_blogs.' . $blog->id;
 
         $this->session->put($key, time());
     }

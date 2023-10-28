@@ -16,12 +16,17 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
 
             $table->id();
-            $table->uuid()->uniqe();
+            $table->uuid();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->boolean('block')->default(false);
+            $table->string('mobile_number')->unique()->comment('شماره تلفن');
+            $table->string('code',6)->nullable()->comment('کداحراز هویت');
+            $table->string('code_at')->nullable()->comment('طول دوره کد احراز هویت');
+            $table->string('code_res')->nullable();
+            //$table->string('role')->default('user');
             $table->softDeletes();
             $table->rememberToken();
             $table->timestamps();

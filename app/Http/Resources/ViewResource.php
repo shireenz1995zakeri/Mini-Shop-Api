@@ -15,7 +15,9 @@ class ViewResource extends JsonResource
     public function toArray($request)
     {
         return [
-            "view_coute"=>$this->view_count,
+
+            "views"=>$this->viewable,
+            'user_id'=>$this->user_id,
         ];
     }
 }

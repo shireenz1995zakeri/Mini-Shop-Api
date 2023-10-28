@@ -14,6 +14,7 @@ interface BaseReposirotyInterface
     public function delete($eloquent): bool;
     public function find(int $id, array $payload = ['*']):Model;
     public function findByUuid(string $uuid, array $payload = ['*']);
+    //public function PopularAccordingToLikes($model);
 }
 
 

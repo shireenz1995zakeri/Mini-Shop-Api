@@ -17,8 +17,9 @@ return new class extends Migration
             $table->id();
             $table->uuid();
             $table->foreignId('user_id')->constrained();
-            $table->decimal('total');
+            $table->decimal('totalAmount');
             $table->unsignedTinyInteger('status');
+            $table->tinyInteger('payment_status')->default(0);
             $table->timestamps();
         });
     }

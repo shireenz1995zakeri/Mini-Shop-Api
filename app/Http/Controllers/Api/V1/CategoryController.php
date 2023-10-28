@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\ShowBrandWithProductResource;
 use App\Models\Category;
 use App\Repositories\Category\CategoryRepositoryInterface;
 use App\Services\Blog\DeleteBlogService;
@@ -20,6 +21,11 @@ class CategoryController extends ApiBaseController
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum');
+        $this->authorizeResource(Category::class);
+    }
     public function index(Request $request,CategoryRepositoryInterface  $repository)
     {
         if($request->input('limit')==-1){
@@ -29,7 +35,7 @@ class CategoryController extends ApiBaseController
         }
         return $this->successResponse(['Categories'=>CategoryResource::collection($model),
             'links'=>CategoryResource::collection($model)->response()->getData()->links],
-            'دسته بندی ها با موفقیت نمایش داده شد');
+            __('ApiMassage.'));
     }
 
     /**
@@ -40,8 +46,9 @@ class CategoryController extends ApiBaseController
      */
     public function store(CategoryRequest $request,StoreCategoryService $service)
     {
-        $model=$service->handle($request->validated());
-        return $this->successResponse(CategoryResource::make($model),"دسته بندی با موفقیت ایجاد شد");
+        $model=StoreCategoryService::run($request->validated());
+        return $this->successResponse(CategoryResource::make($model->load('translation')),
+            __('ApiMassage'));
     }
 
     /**
@@ -53,7 +60,8 @@ class CategoryController extends ApiBaseController
     public function show(Category $category,CategoryRepositoryInterface  $repository)
     {
           $model=$repository->find($category->id);
-        return $this->successResponse(CategoryResource::make($model),"دسته بندی با موفقیت نمایش شد");
+        return $this->successResponse(CategoryResource::make($model->load('translation')),
+            __('ApiMassage'));
 
     }
 
@@ -67,8 +75,9 @@ class CategoryController extends ApiBaseController
     public function update(CategoryRequest $request, UpdateCategoryService $service,Category $category)
     {
 
-        $model=$service->handle($category,$request->validated());
-        return $this->successResponse(CategoryResource::make($model),"دسته بندی با موفقیت آپدیت شد");
+        $model=UpdateCategoryService::run($category,$request->validated());
+        return $this->successResponse(CategoryResource::make($model->load('translation')),
+            __('ApiMassage'));
     }
 
     /**
@@ -79,22 +88,26 @@ class CategoryController extends ApiBaseController
      */
     public function destroy(Category $category,DeleteBlogService $service)
     {
-        $model=$service->handle($category);
-        return $this->successResponse(CategoryResource::make($model),"دسته بندی حدف شد");
+        DeleteBlogService::run($category);
+        return $this->successResponse(CategoryResource::make($category),
+            __('ApiMassage'));
     }
 
     public function parent(Category $category)
     {
-        return $this->successResponse(CategoryResource::make($category->parent),'get parents');
+        return $this->successResponse(CategoryResource::make($category->load('parent')),
+            __('ApiMassage'));
     }
     public function children(Category $category)
     {
-        return $this->successResponse(CategoryResource::make($category->children),'get children');
+        return $this->successResponse(CategoryResource::make($category->load('children')),
+            __('ApiMassage'));
     }
     public function getProducts(Category $category)
     {
-//        dd($category->products);
 
-        return $this->successResponse(ProductResource::collection($category->products),'get products in category');
+        return $this->successResponse(ShowBrandWithProductResource::collection($category->load('products')),
+            //'get products in category'
+            __('ApiMassage'));
     }
 }

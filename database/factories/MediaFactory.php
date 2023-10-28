@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Blog;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,8 +20,12 @@ class MediaFactory extends Factory
     public function definition()
     {
         return [
-            'mediaable_type' => fake()->randomElement([Product::class , Blog::class]),
-            'mediaable_id' => rand(1,36),
+            'mediaable_type' => fake()->randomElement([Product::class , Blog::class,User::class]),
+            'mediaable_id' => rand(1,10),
+            'url' => fake()->url,
+            'extension' => fake()->randomElement(['pdf' ,'jpeg', 'jpg']),
+            'size' => rand(1,3),
+
 
         ];
     }

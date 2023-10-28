@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\Translation\TranslationService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class BrandResource extends JsonResource
@@ -16,7 +17,15 @@ class BrandResource extends JsonResource
     {
         return [
             'id'=>$this->id,
-            'title'=>$this->title,
+            'uuid'     => $this->uuid,
+//            dd(TranslationService::get($this->resource,'title')),
+            'title'=>$this->whenLoaded('translation',function (){
+               return TranslationService::get($this->resource,'title');
+            }),
+
+            // 'title'=>$this->title,
+            'products' => $this->whenLoaded('products',
+                fn()=>ProductResource::collection($this->products)),
         ];
     }
 }

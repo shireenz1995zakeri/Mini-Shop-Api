@@ -18,7 +18,7 @@ return new class extends Migration
             $table->uuid();
             $table->foreignId('parent_id')->nullable()->references('id')->on('categories');
             $table->boolean('published')->default(0);
-            $table->string('title');
+            //$table->string('title');
 
             $table->timestamps();
         });

@@ -4,7 +4,10 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Traits\HasComment;
+use App\Traits\HasLike;
+use App\Traits\HasMedia;
 use App\Traits\HasUuid;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -15,7 +18,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable,HasUuid,HasComment,SoftDeletes,HasRoles;
+    use HasApiTokens, HasFactory, Notifiable,HasUuid,HasMedia,SoftDeletes,HasComment,HasLike, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -26,6 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'mobile_number',
     ];
 
     /**
@@ -46,20 +50,32 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-    public function blogs():HasMany
+    public function blogs(): HasMany
     {
         return $this->hasMany(Blog::class);
     }
 
-    public function orders()
+    public function cart(): HasMany
+    {
+        return $this->hasMany(Cart::class);
+    }
+
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
-
     }
-    public function product():HasMany
+
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }
+
+
+    function createAccessToken(): string
+    {
+        return $this->createToken("API TOKEN", [null], Carbon::now()->addHours(5))->plainTextToken;
+    }
+
 
 
 

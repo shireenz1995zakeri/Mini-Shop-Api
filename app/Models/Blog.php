@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\HasTranslationAuto;
 use App\Traits\HasUser;
 use App\Traits\HasUuid;
+use App\Traits\HasView;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,13 +19,13 @@ use App\Services\Translation\TranslationService;
 
 class Blog extends Model
 {
-    use HasFactory, HasComment, HasMedia, HasLike, HasUser, HasUuid, SoftDeletes,HasTranslationAuto;
+    use HasFactory, HasComment, HasMedia, HasLike, HasUser,HasView ,HasUuid, SoftDeletes,HasTranslationAuto;
 
 
     protected $fillable = [
         'uuid',
-        'title',
-        'body',
+       // 'title',
+       // 'body',
         'category_id',
         'user_id',
         'published',
@@ -36,35 +37,12 @@ class Blog extends Model
         return $this->belongsTo(Category::class);
     }
 //
-//    public function translation()
-//    {
-//        return $this->morphOne(Translation::class, 'translatable')->where('locale', app()->getLocale());
-//    }
-//
-//    private array $translatable = ['title', 'summery'];
-//
-//    public function getAttribute($key)
-//    {
-//        if (in_array($key, $this->translatable)) {
-//                 return TranslationService::get($this,$key);
-//        }
-//        return $this->attributes[$key];
-//    }
-//
-//    public function setAttribute($key,$value)
-//    {
-//        if(in_array($key,$this->translatable)){
-//              return TranslationService::store($this,$key,$value);
-//            }
-//        $this->attributes[$key]=$value;
-//
-//    }
-//    public function scopeEn($builder){
-//        $builder->select(['*' ,'blogs.id as id'])
-//            ->join('translations','blogs.id','=','translations.translatable_id')
-//            ->where('translations.translatable_type',Blog::class)
-//            ->where('translations.locale',app()->getLocale());
-//    }
+    public function translation()
+    {
+        return $this->morphMany(Translation::class, 'translatable')->
+        where('locale', app()->getLocale());
+    }
+
 
 
 }
