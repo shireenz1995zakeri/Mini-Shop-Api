@@ -24,10 +24,11 @@ class AuthRequest extends FormRequest
         return [
             'name'        => 'required|string',
             'family'      => 'required|string',
-            'email'       => 'required|email|string|unique:users',
+            'email'       => 'required|email|string|unique:users,email',
             'password'    => 'required|string',
             'c_password'  => 'required|same:password',
-            'remember_me' => 'boolean'
+            'remember_me' => 'boolean',
+            'mobile_number'=>'required'
 
         ];
     }

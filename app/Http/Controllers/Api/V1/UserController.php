@@ -34,7 +34,7 @@ class UserController extends ApiBaseController
         }
 
         return $this->successResponse([
-            "blogs" => UserResource::collection($model),
+            "users" => UserResource::collection($model),
             "links" => UserResource::collection($model)->response()->getData()->links],
          __('ApiMassage.Users were successfully displayed'));
     }

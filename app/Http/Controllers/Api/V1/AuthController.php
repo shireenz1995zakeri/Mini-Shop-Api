@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
+use App\Http\Resources\UserResource;
 use App\Models\View;
+use App\Services\User\StoreUserService;
 use Illuminate\Http\Request;
 use App\Http\Requests\loginWithCodeRequest;
 use App\Http\Requests\sendSmsCodeRequest;
@@ -17,14 +19,20 @@ class AuthController extends ApiBaseController
 {
     public function register(AuthRequest $request): JsonResponse
     {
-        $request->validated();
+//        $request->validated();
+//
+//        $user = new User([
+//            'name'     => $request->name,
+//            'family'   => $request->family,
+//            'email'    => $request->email,
+//            'password' => Hash::make($request->newPassword),
+//            'mobile_number'=>$request->mobile_number,
+//        ]);
 
-        $user = new User([
-            'name'     => $request->name,
-            'family'   => $request->family,
-            'email'    => $request->email,
-            'password' => Hash::make($request->newPassword),
-        ]);
+        $data=$request->validated();
+        $data['password']=Hash::make('password');
+        $user = StoreUserService::run($data);
+
 
         if ($user->save()) {
             $tokenResult = $user->createToken('Personal Access Token');
@@ -62,7 +70,6 @@ class AuthController extends ApiBaseController
         }
         return $this->successResponse(message: 'پنل پیامکی فعال نیست' );
     }
-
 
     public function loginWithCode(loginWithCodeRequest $request)
     {
