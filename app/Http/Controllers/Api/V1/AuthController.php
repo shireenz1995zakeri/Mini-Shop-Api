@@ -13,6 +13,7 @@ use App\Http\Requests\sendSmsCodeRequest;
 use App\Models\SmsConfig;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends ApiBaseController
@@ -90,7 +91,7 @@ class AuthController extends ApiBaseController
     public function logout(Request $request)
     {
 
-            $user = auth()->user()->tokens()->delete();
+            $user = Auth::user()->tokens()->delete();
             return $this->successResponse($user, 'user logged out');
 
     }
